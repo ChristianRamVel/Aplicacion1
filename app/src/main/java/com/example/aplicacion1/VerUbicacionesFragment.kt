@@ -1,6 +1,7 @@
 package com.example.aplicacion1
 
 import LocationDbHelper
+import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
@@ -23,21 +24,22 @@ class VerUbicacionesFragment : Fragment() {
 
     private var botonAñadirUbicacion: Button? = null
     private var botonBorrarUbicacion: Button? = null
-    private var botonVerUbicacion: Button? = null
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         val view = inflater.inflate(R.layout.fragment_ver_ubicaciones, container, false)
-
+        //declaramos el listview primero para poder despues pintar las ubicaciones de la base de datos
         val listviewUbicaciones = view.findViewById<ListView>(R.id.listviewUbicaciones)
+
+        guardarUbicacionesDesdeIntent()
+
         val ubicaciones = obtenerUbicacionesDesdeBaseDeDatos()
         val ubicacionesAdapter = UbicacionesAdapter(requireContext(), ubicaciones)
 
         botonAñadirUbicacion = view.findViewById(R.id.botonAñadirUbicacion)
         botonBorrarUbicacion = view.findViewById(R.id.botonBorrarUbicacion)
-        botonVerUbicacion = view.findViewById(R.id.botonVerUbicacion)
 
         botonAñadirUbicacion?.setOnClickListener {
             openGuardarUbicacionesFragment()
@@ -50,18 +52,6 @@ class VerUbicacionesFragment : Fragment() {
             val ubicaciones = obtenerUbicacionesDesdeBaseDeDatos()
             val ubicacionesAdapter = UbicacionesAdapter(requireContext(), ubicaciones)
             listviewUbicaciones.adapter = ubicacionesAdapter
-        }
-
-        botonVerUbicacion?.setOnClickListener {
-            val ubicaciones = obtenerUbicacionesDesdeBaseDeDatos()
-            if (ubicaciones.isNotEmpty()) {
-                val ubicacion = ubicaciones[0]
-
-                val intent = Uri.parse("geo:${ubicacion.latitud},${ubicacion.longitud}")
-                val intentMapa = Intent(Intent.ACTION_VIEW, intent)
-                intentMapa.setPackage("com.example.mapaapp")
-                startActivity(intentMapa)
-            }
         }
 
         listviewUbicaciones.setOnItemClickListener { _, _, position, _ ->
@@ -79,10 +69,8 @@ class VerUbicacionesFragment : Fragment() {
             intent.action = "com.example.mapaapp.MOSTRAR_UBICACION"
             intent.putExtra("latitud", ubicacion.latitud)
             intent.putExtra("longitud", ubicacion.longitud)
+            intent.putExtra("descripcion", ubicacion.descripcion)
             startActivity(intent)
-        } else {
-            // Manejar el caso en el que la aplicación no esté instalada
-            Log.e("VerUbicacionesFragment", "La aplicación de mapas no está instalada.")
         }
     }
     //inflar listview
@@ -113,7 +101,7 @@ class VerUbicacionesFragment : Fragment() {
         override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View {
             val ubicacion = getItem(position) as Ubicacion
             val textView = TextView(mContext)
-            textView.text = "Latitud: ${ubicacion.latitud}, Longitud: ${ubicacion.longitud}"
+            textView.text = "Latitud: ${ubicacion.latitud}\nLongitud: ${ubicacion.longitud}\nDescripción: ${ubicacion.descripcion}"
             return textView
         }
 
@@ -127,19 +115,14 @@ class VerUbicacionesFragment : Fragment() {
     private fun openGuardarUbicacionesFragment() {
         // Crear una instancia del fragmento GuardarUbicacionesFragment
         val guardarUbicacionesFragment = GuardarUbicacionesFragment()
-
         // Obtener el FragmentManager
         val fragmentManager: FragmentManager = requireActivity().supportFragmentManager
-
         // Iniciar una transacción de fragmento
         val transaction: FragmentTransaction = fragmentManager.beginTransaction()
-
         // Reemplazar el fragmento actual con el nuevo fragmento
         transaction.replace(R.id.fragment_container, guardarUbicacionesFragment)
-
         // Añadir la transacción a la pila de retroceso
         transaction.addToBackStack(null)
-
         // Confirmar la transacción
         transaction.commit()
     }
@@ -151,7 +134,8 @@ class VerUbicacionesFragment : Fragment() {
         val db = dbHelper.readableDatabase
         val projection = arrayOf(
             LocationContract.LocationEntry.COLUMN_LATITUD,
-            LocationContract.LocationEntry.COLUMN_LONGITUD
+            LocationContract.LocationEntry.COLUMN_LONGITUD,
+            LocationContract.LocationEntry.COLUMN_DESCRIPCION
         )
         val cursor = db.query(
             LocationContract.LocationEntry.TABLE_NAME,
@@ -162,13 +146,37 @@ class VerUbicacionesFragment : Fragment() {
             null,
             null
         )
-        with(cursor) {
-            while (moveToNext()) {
-                val latitud = getDouble(getColumnIndexOrThrow(LocationContract.LocationEntry.COLUMN_LATITUD))
-                val longitud = getDouble(getColumnIndexOrThrow(LocationContract.LocationEntry.COLUMN_LONGITUD))
-                ubicaciones.add(Ubicacion(latitud, longitud))
+
+        if (cursor != null) {
+            with(cursor) {
+                while (moveToNext()) {
+                    val latitud = getDouble(getColumnIndexOrThrow(LocationContract.LocationEntry.COLUMN_LATITUD))
+                    val longitud = getDouble(getColumnIndexOrThrow(LocationContract.LocationEntry.COLUMN_LONGITUD))
+                    val descripcion = getString(getColumnIndexOrThrow(LocationContract.LocationEntry.COLUMN_DESCRIPCION))
+                    ubicaciones.add(Ubicacion(latitud, longitud, descripcion))
+                }
             }
         }
+
         return ubicaciones
+    }
+
+    //metodo para recibir ubicaciones desde el intent de la otra app y guardarlas en sqlite
+    fun guardarUbicacionesDesdeIntent() {
+        val intent = requireActivity().intent
+        val latitud = intent.getDoubleExtra("latitud", 0.0)
+        val longitud = intent.getDoubleExtra("longitud", 0.0)
+        val descripcion = intent.getStringExtra("descripcion")
+        if (latitud != 0.0 && longitud != 0.0 && descripcion != null) {
+            val dbHelper = LocationDbHelper(requireContext())
+            val db = dbHelper.writableDatabase
+            val values = ContentValues().apply {
+                put(LocationContract.LocationEntry.COLUMN_LATITUD, latitud)
+                put(LocationContract.LocationEntry.COLUMN_LONGITUD, longitud)
+                put(LocationContract.LocationEntry.COLUMN_DESCRIPCION, descripcion)
+            }
+
+            val newRowId = db?.insert(LocationContract.LocationEntry.TABLE_NAME, null, values)
+        }
     }
 }

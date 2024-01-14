@@ -25,9 +25,7 @@ class GuardarUbicacionesFragment : Fragment() {
 
         val editTextLatitud = view?.findViewById<EditText>(R.id.latitud)
         val editTextLongitud = view?.findViewById<EditText>(R.id.longitud)
-        Log.d("GuardarUbicaciones", "editTextLatitud: $editTextLatitud")
-        Log.d("GuardarUbicaciones", "editTextLongitud: $editTextLongitud")
-
+        val editTextDescripcion = view?.findViewById<EditText>(R.id.descripcion)
 
 
         botonGuardarUbicacion = view.findViewById(R.id.botonGuardarUbicacion)
@@ -35,13 +33,16 @@ class GuardarUbicacionesFragment : Fragment() {
         botonGuardarUbicacion.setOnClickListener {
             val latitud = editTextLatitud?.text.toString().toDoubleOrNull()
             val longitud = editTextLongitud?.text.toString().toDoubleOrNull()
+            val descripcion = editTextDescripcion?.text.toString()
             editTextLatitud?.setText("")
             editTextLongitud?.setText("")
+            editTextDescripcion?.setText("")
             val dbHelper = LocationDbHelper(requireContext())
             val db = dbHelper.writableDatabase
             val values = ContentValues().apply {
                 put(LocationContract.LocationEntry.COLUMN_LATITUD, latitud)
                 put(LocationContract.LocationEntry.COLUMN_LONGITUD, longitud)
+                put(LocationContract.LocationEntry.COLUMN_DESCRIPCION, descripcion)
             }
 
             val newRowId = db?.insert(LocationContract.LocationEntry.TABLE_NAME, null, values)

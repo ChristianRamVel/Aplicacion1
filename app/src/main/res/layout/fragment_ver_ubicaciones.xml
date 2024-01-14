@@ -6,52 +6,58 @@
     android:layout_height="match_parent"
     tools:context=".VerUbicacionesFragment">
 
-    <ListView
-        android:id="@+id/listviewUbicaciones"
+    <LinearLayout
+        android:id="@+id/listado"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:scrollbars="vertical"
+        android:layout_height="0dp"
+        android:orientation="vertical"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/fragmentBotones">
 
+        <ListView
+            android:id="@+id/listviewUbicaciones"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="#BBDEFB"
+            android:scrollbars="vertical" />
 
-        ></ListView>
+    </LinearLayout>
 
-    <Button
-        android:id="@+id/botonBorrarUbicacion"
-        android:layout_width="wrap_content"
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/fragmentBotones"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="30dp"
-        android:text="Borrar"
-        app:layout_constraintBottom_toBottomOf="parent"
+        android:orientation="horizontal"
+        android:padding="10dp"
+        android:background="#BBDEFB"
+        app:layout_constraintTop_toBottomOf="@+id/listado"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@id/botonVerUbicacion"
-
-        ></Button>
-
-    <Button
-        android:id="@+id/botonAñadirUbicacion"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="30dp"
-        android:text="añadir"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@id/botonVerUbicacion"
         app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent">
 
+        <Button
+            android:id="@+id/botonBorrarUbicacion"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Borrar"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/botonAñadirUbicacion"
+            app:layout_constraintBottom_toBottomOf="parent"
+            />
 
-        ></Button>
+        <Button
+            android:id="@+id/botonAñadirUbicacion"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Añadir"
+            app:layout_constraintEnd_toStartOf="@id/botonBorrarUbicacion"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            />
 
-    <Button
-        android:id="@+id/botonVerUbicacion"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="30dp"
-        android:text="Ver"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@id/botonBorrarUbicacion"
-        app:layout_constraintStart_toEndOf="@id/botonAñadirUbicacion"></Button>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

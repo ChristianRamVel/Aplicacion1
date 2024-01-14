@@ -23,7 +23,8 @@ class LocationDbHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NA
             "CREATE TABLE ${LocationContract.LocationEntry.TABLE_NAME} (" +
                     "${BaseColumns._ID} INTEGER PRIMARY KEY," +
                     "${LocationContract.LocationEntry.COLUMN_LATITUD} REAL," +
-                    "${LocationContract.LocationEntry.COLUMN_LONGITUD} REAL)"
+                    "${LocationContract.LocationEntry.COLUMN_LONGITUD} REAL," +
+                    "${LocationContract.LocationEntry.COLUMN_DESCRIPCION} TEXT)"
 
         private const val SQL_DELETE_ENTRIES = "DROP TABLE IF EXISTS ${LocationContract.LocationEntry.TABLE_NAME}"
     }
